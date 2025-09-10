@@ -1,11 +1,13 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
     namespace = "com.example.movieapp"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.movieapp"
@@ -15,9 +17,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // API Key pakai gradle.properties (local.properties) biar ga keliatan aja
+        buildConfigField("String", "TMDB_API_KEY", "\"${properties["TMDB_API_KEY"] ?: ""}\"")
     }
 
-    buildFeatures{
+    buildFeatures {
+        buildConfig = true
         viewBinding = true
     }
 
@@ -30,41 +36,53 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
 }
 
-val lifecycle_version: String by rootProject.extra
-val retrofit_version: String by rootProject.extra
-val glide_version: String by rootProject.extra
-
 dependencies {
+    dependencies {
+        // Hilt
+        implementation(libs.hilt.android)
+        kapt(libs.hilt.android.compiler)
 
-    implementation ("com.github.bumptech.glide:glide:$glide_version")
+        // OkHttp logging
+        implementation(libs.okhttp.logging.interceptor)
 
-    // ViewModel
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
-    // ViewModel utilities for Compose
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version")
-    // LiveData
-    implementation("androidx.lifecycle:lifecycle-live data-ktx:$lifecycle_version")
+        // Lifecycle
+        implementation(libs.androidx.lifecycle.runtime.ktx)
+        implementation(libs.androidx.lifecycle.viewmodel.ktx)
+        implementation(libs.androidx.lifecycle.viewmodel.compose)
+        implementation(libs.androidx.lifecycle.livedata.ktx)
 
-    // retrofit
-    implementation("com.squareup.retrofit2:retrofit:$retrofit_version")
-    implementation ("com.squareup.retrofit2:converter-gson:$retrofit_version")
+        // Hilt ViewModel (Compose Navigation support)
+        implementation(libs.androidx.hilt.navigation.compose)
 
+        // Glide
+        implementation(libs.glide)
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+        // Retrofit
+        implementation(libs.retrofit)
+        implementation(libs.converter.gson)
+
+        // AndroidX UI
+        implementation(libs.androidx.core.ktx)
+        implementation(libs.androidx.appcompat)
+        implementation(libs.material)
+        implementation(libs.androidx.activity)
+        implementation(libs.androidx.constraintlayout)
+
+        // Testing
+        testImplementation(libs.junit)
+        androidTestImplementation(libs.androidx.junit)
+        androidTestImplementation(libs.androidx.espresso.core)
+    }
+
 }
